@@ -16,7 +16,7 @@
 *.asmref                unity-json
 *.index                 unity-json
 *.inputactions          unity-json
-*.shadergraph           unity-json
+*.shadergraph filter=lfs diff=lfs merge=lfs -text
 *.shadersubgraph        unity-json
 # Unity UI Toolkit files
 *.tss                   text diff=css linguist-language=css
@@ -24,7 +24,7 @@
 *.uxml                  text linguist-language=xml linguist-detectable
 # Unity YAML
 *.anim                  unity-yaml
-*.asset                 unity-yaml
+*.asset filter=lfs diff=lfs merge=lfs -text
 *.brush                 unity-yaml
 *.controller            unity-yaml
 *.flare                 unity-yaml
@@ -34,11 +34,11 @@
 *.lighting              unity-yaml
 *.mask                  unity-yaml
 *.mat                   unity-yaml
-*.meta                  unity-yaml
+*.meta filter=lfs diff=lfs merge=lfs -text
 *.mixer                 unity-yaml
 *.overrideController    unity-yaml
 *.playable              unity-yaml
-*.prefab                unity-yaml
+*.prefab filter=lfs diff=lfs merge=lfs -text
 *.preset                unity-yaml
 *.renderTexture         unity-yaml
 *.scenetemplate         unity-yaml
@@ -47,7 +47,7 @@
 *.spriteatlas           unity-yaml
 *.spriteatlasv2         unity-yaml
 *.terrainlayer          unity-yaml
-*.unity                 unity-yaml
+*.unity filter=lfs diff=lfs merge=lfs -text
 # "physic" for 3D but "physics" for 2D
 *.physicMaterial        unity-yaml
 *.physicsMaterial2D     unity-yaml
@@ -140,8 +140,3 @@ Assets/Plugins/**       linguist-vendored
 # Exceptions for .asset files such as lightning pre-baking
 LightingData.asset     binary
 *.psd filter=lfs diff=lfs merge=lfs -text
-*.unity filter=lfs diff=lfs merge=lfs -text
-*.prefab filter=lfs diff=lfs merge=lfs -text
-*.asset filter=lfs diff=lfs merge=lfs -text
-*.meta filter=lfs diff=lfs merge=lfs -text
-*.shadergraph filter=lfs diff=lfs merge=lfs -text
