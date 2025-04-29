@@ -1,0 +1,86 @@
+.panel {
+    flex-grow: 1;
+    align-content: auto;
+    align-items: stretch;
+}
+
+.label {
+    font-size: 30px;
+    -unity-font-style: italic;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    border-bottom-left-radius: 25px;
+    background-color: rgba(36, 0, 0, 0.82);
+    padding-left: 20px;
+    padding-right: 20px;
+    top: 7px;
+}
+
+.button_container {
+    top: auto;
+    align-items: stretch;
+    overflow: visible;
+    position: relative;
+    bottom: -128px;
+}
+
+.buttons {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border-top-width: 5px;
+    border-right-width: 5px;
+    border-bottom-width: 5px;
+    border-left-width: 5px;
+    border-left-color: rgba(0, 0, 0, 0.51);
+    border-right-color: rgba(0, 0, 0, 0.51);
+    border-top-color: rgba(0, 0, 0, 0.51);
+    border-bottom-color: rgba(0, 0, 0, 0.51);
+    background-color: rgba(36, 0, 0, 0.82);
+    color: rgb(255, 255, 255);
+    align-items: auto;
+}
+
+.buttons:hover {
+    background-color: rgb(0, 0, 0);
+    scale: 1.1 1;
+    transition-timing-function: ease-out-elastic;
+    transition-duration: 0.5s;
+}
+
+.inner_background {
+    background-color: rgba(101, 23, 23, 0.7);
+    border-top-left-radius: 31px;
+    border-top-right-radius: 31px;
+    border-bottom-right-radius: 31px;
+    border-bottom-left-radius: 31px;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    margin-top: 29px;
+    margin-left: 29px;
+    margin-bottom: 29px;
+    margin-right: 29px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
+.chat {
+    position: relative;
+    top: 40px;
+    align-self: center;
+    align-content: auto;
+    align-items: auto;
+    font-size: 20px;
+    visibility: visible;
+    -unity-font-style: bold;
+    -unity-text-align: upper-center;
+}
+
+.name {
+}
