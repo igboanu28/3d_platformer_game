@@ -1,4 +1,0 @@
-repository "3d_platformer_game/3d_platformer_game@11270472032900@cloud"
-  path "/"
-    br "/main"
-    co "/main"
