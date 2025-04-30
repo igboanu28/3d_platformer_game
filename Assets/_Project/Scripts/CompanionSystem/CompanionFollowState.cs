@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Rendering.Universal;
+//using UnityEngine.Rendering.Universal;
 namespace CompanionSystem
 {
     public class CompanionFollowState : CompanionBaseState
