@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.Playables; // For PlayableDirector
 
 namespace DialogueSystem
 {
@@ -20,6 +21,9 @@ namespace DialogueSystem
 
         [Header("Events")]
         [SerializeField] private BoolEventChannel dialogueEventChannel;
+
+        [SerializeField] private CutsceneEventChannel cutsceneEventChannel;
+
 
         void Awake()
         {
@@ -82,9 +86,16 @@ namespace DialogueSystem
             //Debug.Log("Starting");
             currentSentence.text = currentDialogue.Sentence[currentSentenceIndex];
 
-            // Enable/Disable buttons based on the current index
-            //previousButton.SetActive(currentSentenceIndex > 0);
-            //nextButton.SetEnabled(currentSentenceIndex < currentDialogue.Sentence.Count - 1);
+            // Check for the cutscene trigger word
+            foreach (var cutscene in currentDialogue.cutscenes)
+            {
+                if (!string.IsNullOrEmpty(cutscene.triggerWord) && currentSentence.text.Contains(cutscene.triggerWord))
+                { 
+                    Debug.Log($"Triggering cutscene: {cutscene.triggerWord} , {cutscene.id}");
+                    cutsceneEventChannel?.Invoke(cutscene);
+                    break;
+                }
+            }
         }
 
         public void NextSsentence()
