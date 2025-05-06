@@ -21,7 +21,7 @@ namespace DialogueSystem
             }
 
             Debug.Log($"Starting Dialogue with ID: {dialogue.id} (NAME: {dialogue.npcName})");
-            foreach (var sentence in dialogue.Sentence)
+            foreach (var sentence in dialogue.sentencesData)
             {
                 Debug.Log($"Dialogue Sentence: {sentence}");
             }

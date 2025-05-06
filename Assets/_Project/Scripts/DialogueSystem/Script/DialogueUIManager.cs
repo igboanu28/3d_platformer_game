@@ -78,35 +78,51 @@ namespace DialogueSystem
         public void DisplayCurrentSentence()
         {
             //Debug.Log($"Displaying sentence {currentSentenceIndex + 1} of {currentDialogue.Sentence.Count}");
-            if (currentDialogue == null || currentSentenceIndex >= currentDialogue.Sentence.Count)
+            if (currentDialogue == null || currentSentenceIndex >= currentDialogue.sentencesData.Count)
             {
                 EndDialogue();
                 return;
             }
             //Debug.Log("Starting");
-            currentSentence.text = currentDialogue.Sentence[currentSentenceIndex];
+            currentSentence.text = currentDialogue.sentencesData[currentSentenceIndex].sentence;
 
-            // Check for the cutscene trigger word
-            foreach (var cutscene in currentDialogue.cutscenes)
+            if(currentDialogue.sentencesData[currentSentenceIndex].cutscene != null)
             {
-                if (!string.IsNullOrEmpty(cutscene.triggerWord) && currentSentence.text.Contains(cutscene.triggerWord))
-                { 
-                    Debug.Log($"Triggering cutscene: {cutscene.triggerWord} , {cutscene.id}");
-                    cutsceneEventChannel?.Invoke(cutscene);
-                    break;
-                }
+                Debug.Log($"Triggering cutscene: {currentDialogue.sentencesData[currentSentenceIndex].cutscene.id}");
+                cutsceneEventChannel?.Invoke(currentDialogue.sentencesData[currentSentenceIndex].cutscene);
             }
+            // Check for the cutscene trigger word
+            //foreach (var cutscene in currentDialogue.cutscenes)
+            //{
+            //    if (!string.IsNullOrEmpty(cutscene.triggerWord) && currentSentence.text.Contains(cutscene.triggerWord))
+            //    { 
+            //        Debug.Log($"Triggering cutscene: {cutscene.triggerWord} , {cutscene.id}");
+            //        cutsceneEventChannel?.Invoke(cutscene);
+            //        break;
+            //    }
+            //}
         }
+
+        public void PauseDialogue()
+        {
+            dialoguePanel.SetEnabled(false);
+        }
+
+        public void ResumeDialogue()
+        {
+            dialoguePanel.SetEnabled(true);
+        }
+
 
         public void NextSsentence()
         {
-            if (currentSentenceIndex < currentDialogue.Sentence.Count - 1)
+            if (currentSentenceIndex < currentDialogue.sentencesData.Count - 1)
             {
                 currentSentenceIndex++;
                 DisplayCurrentSentence();
 
                 // If this is the last sentence, update the button text to "Close"
-                if (currentSentenceIndex == currentDialogue.Sentence.Count - 1)
+                if (currentSentenceIndex == currentDialogue.sentencesData.Count - 1)
                 {
                     nextButton.text = "Close";
                 }

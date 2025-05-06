@@ -10,6 +10,7 @@ namespace DialogueSystem
 
         public override void Raise(CutsceneSO cutscene)
         {
+            Debug.Log($"CutsceneEventListener: Raising cutscene event for {cutscene.id}");
             if (cutsceneManager != null)
             {
                 cutsceneManager.PlayCutscene(cutscene);
