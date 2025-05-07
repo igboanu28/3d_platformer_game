@@ -88,9 +88,18 @@ namespace DialogueSystem
             if(currentDialogue.sentencesData[currentSentenceIndex].cutscene != null)
             {
                 Debug.Log($"Triggering cutscene: {currentDialogue.sentencesData[currentSentenceIndex].cutscene.id}");
+
+                // Change the button text to "Skip"
+                nextButton.text = "Skip";
+
                 cutsceneEventChannel?.Invoke(currentDialogue.sentencesData[currentSentenceIndex].cutscene);
             }
-            
+            else
+            {
+                // Change the button text to "Next"
+                nextButton.text = "Next"; // which is the default text
+            }
+
         }
 
         public void PauseDialogue()
@@ -106,6 +115,26 @@ namespace DialogueSystem
 
         public void NextSsentence()
         {
+            if (nextButton.text == "Skip")
+            {
+                //If the button text is "Skip", we want to skip the cutscene
+                if (CutsceneManager.Instance != null)
+                { 
+                    CutsceneManager.Instance.SkipCurrentCutscene();
+                }
+
+                // Change the button text back to "Next" or close 
+                if (currentSentenceIndex == currentDialogue.sentencesData.Count - 1)
+                { 
+                    nextButton.text = "Close";
+                }
+                else
+                {
+                    nextButton.text = "Next";
+                }
+                return;
+            }
+
             if (currentSentenceIndex < currentDialogue.sentencesData.Count - 1)
             {
                 currentSentenceIndex++;

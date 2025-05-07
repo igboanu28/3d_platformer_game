@@ -80,5 +80,14 @@ namespace DialogueSystem
                 DialogueUIManager.Instance.ResumeDialogue();
             }
         }
+
+        public void SkipCurrentCutscene()
+        {
+            if (director != null && director.state == PlayState.Playing)
+            { 
+                director.time = director.duration; // Skip to the end of the cutscene
+                director.Stop(); // Stop the cutscene
+            }
+        }
     }
 }
