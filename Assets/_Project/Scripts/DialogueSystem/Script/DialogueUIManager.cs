@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.Playables; // For PlayableDirector
 
 namespace DialogueSystem
 {
@@ -91,16 +90,7 @@ namespace DialogueSystem
                 Debug.Log($"Triggering cutscene: {currentDialogue.sentencesData[currentSentenceIndex].cutscene.id}");
                 cutsceneEventChannel?.Invoke(currentDialogue.sentencesData[currentSentenceIndex].cutscene);
             }
-            // Check for the cutscene trigger word
-            //foreach (var cutscene in currentDialogue.cutscenes)
-            //{
-            //    if (!string.IsNullOrEmpty(cutscene.triggerWord) && currentSentence.text.Contains(cutscene.triggerWord))
-            //    { 
-            //        Debug.Log($"Triggering cutscene: {cutscene.triggerWord} , {cutscene.id}");
-            //        cutsceneEventChannel?.Invoke(cutscene);
-            //        break;
-            //    }
-            //}
+            
         }
 
         public void PauseDialogue()

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Playables;
-using Platformer;
 
 namespace DialogueSystem
 {
@@ -52,6 +51,12 @@ namespace DialogueSystem
             {
                 Debug.LogError("Cutscene or timeline is not assigned or Invalid.");
                 return;
+            }
+
+            // Pause the dialogue UI
+            if (DialogueUIManager.Instance != null)
+            { 
+                DialogueUIManager.Instance.PauseDialogue();
             }
            
             // Switch to dolly camera
