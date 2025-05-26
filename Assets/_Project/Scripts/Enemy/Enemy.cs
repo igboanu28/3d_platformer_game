@@ -22,8 +22,15 @@ namespace Enemy
         StateMachine stateMachine;
 
         CountdownTimer attackTimer;
+        Platformer.Health health;
 
         void OnValidate() => this.ValidateRefs();
+
+        void Awake()
+        {
+            health = GetComponent<Platformer.Health>();
+        }
+
         void Start()
         {
             attackTimer = new CountdownTimer(timeBetweenAttacks);
@@ -34,6 +41,7 @@ namespace Enemy
             var chaseState = new EnemyChaseState(this, animator, agent, playerDetector.Player);
             var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
             var idleState = new EnemyIdleState(this, animator, idleDuration);
+            var deathState = new EnemyDeathState(this, animator, agent);
 
             At(wanderState, chaseState, new FuncPredicate(() => playerDetector.CanDetectPlayer()));
             At(chaseState, wanderState, new FuncPredicate(() => !playerDetector.CanDetectPlayer()));
@@ -42,6 +50,8 @@ namespace Enemy
             At(wanderState, idleState, new FuncPredicate(() => wanderState.IsWanderComplete()));
             At(idleState, wanderState, new FuncPredicate(() => idleState.IsIdleComplete()));
 
+            // this goes to the death transition from any state
+            Any(deathState, new FuncPredicate(() => health.IsDead));
 
             stateMachine.SetState(wanderState);
         }
@@ -67,5 +77,7 @@ namespace Enemy
             attackTimer.Start();
             playerDetector.PlayerHealth.TakeDamage(10);
         }
+
+
     }
 }

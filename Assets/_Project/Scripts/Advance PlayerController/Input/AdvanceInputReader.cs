@@ -18,7 +18,10 @@ public class AdvanceInputReader : ScriptableObject, IPlayerActions, IInputReader
     public event UnityAction DisableMouseControlCamera = delegate { };
     public event UnityAction<bool> Jump = delegate { };
     public event UnityAction<bool> Dash = delegate { };
-    public event UnityAction Attack = delegate { };
+    public event UnityAction LightAttack = delegate { };
+    public event UnityAction SpinAttack = delegate { };
+    public event UnityAction HeavyAttack = delegate { };
+
     public event UnityAction<RaycastHit> Click = delegate { };
 
     public PlayerInputActions inputActions;
@@ -54,7 +57,7 @@ public class AdvanceInputReader : ScriptableObject, IPlayerActions, IInputReader
         return context.control.device.name == "Mouse";
     }
 
-    public void OnFire(InputAction.CallbackContext context)
+    public void OnLightAttack(InputAction.CallbackContext context)
     {
         if (context.phase == InputActionPhase.Started)
         {
@@ -66,6 +69,22 @@ public class AdvanceInputReader : ScriptableObject, IPlayerActions, IInputReader
                     Click.Invoke(hit);
                 }
             }
+        }
+    }
+
+    public void OnSpinAttack(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Started)
+        {
+            SpinAttack?.Invoke();
+        }
+    }
+
+    public void OnHeavyAttack(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Started)
+        {
+            HeavyAttack?.Invoke();
         }
     }
 

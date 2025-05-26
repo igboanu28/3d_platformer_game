@@ -17,6 +17,8 @@ namespace DialogueSystem
         [Header("Player Director")]
         [SerializeField] private PlayableDirector director; // PlayableDirector for the cutscene
 
+        private CutsceneSO currentCutscene; // Store the current CutsceneSO
+
         private void Awake()
         {
             if (Instance == null)
@@ -45,6 +47,8 @@ namespace DialogueSystem
             }
         }
 
+        
+
         public void PlayCutscene(CutsceneSO cutscene)
         {
             if (cutscene == null || cutscene.timeline == null)
@@ -55,10 +59,10 @@ namespace DialogueSystem
 
             // Pause the dialogue UI
             if (DialogueUIManager.Instance != null)
-            { 
+            {
                 DialogueUIManager.Instance.PauseDialogue();
             }
-           
+
             // Switch to dolly camera
             followCamera.SetActive(false);
             dollyCamera.SetActive(true);
@@ -69,24 +73,24 @@ namespace DialogueSystem
         }
 
         private void OnCutsceneEnd(PlayableDirector _)
-        { 
+        {
             // Switch back to follow camera
             followCamera.SetActive(true);
             dollyCamera.SetActive(false);
 
             // Resume dialogue if applicable
             if (DialogueUIManager.Instance != null)
-            { 
+            {
                 DialogueUIManager.Instance.ResumeDialogue();
             }
         }
-
         public void SkipCurrentCutscene()
         {
             if (director != null && director.state == PlayState.Playing)
-            { 
+            {
                 director.time = director.duration; // Skip to the end of the cutscene
                 director.Stop(); // Stop the cutscene
+                director.Evaluate(); // Ensure the cutscene is evaluated to the end
             }
         }
     }

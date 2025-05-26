@@ -48,8 +48,8 @@ namespace Platformer
 
         [Header("Attack Settings")]
         [SerializeField] float attackCooldown = 0.5f;
-        [SerializeField] float attackDistance = 1f;
-        [SerializeField] int attackDamage = 10;
+        //[SerializeField] float attackDistance = 1f;
+        //[SerializeField] int attackDamage = 10;
 
         const float ZeroF = 0f;
 
@@ -111,14 +111,14 @@ namespace Platformer
             var locomotionState = new LocomotionState(this, animator);
             var jumpState = new JumpState(this, animator);
             var dashState = new DashState(this, animator);
-            var attackState = new AttackState(this, animator);
+            //var attackState = new AttackState(this, animator);
 
 
             // Define transitions
             At(locomotionState, jumpState, new FuncPredicate(() => jumpTimer.IsRunning));
             At(locomotionState, dashState, new FuncPredicate(() => dashTimer.IsRunning));
-            At(locomotionState, attackState, new FuncPredicate(() => attackTimer.IsRunning));
-            At(attackState, locomotionState, new FuncPredicate(() => !attackTimer.IsRunning));
+            //At(locomotionState, attackState, new FuncPredicate(() => attackTimer.IsRunning));
+            //At(attackState locomotionState, new FuncPredicate(() => !attackTimer.IsRunning));
             Any(locomotionState, new FuncPredicate(ReturnToLocomotionState));
             
             
@@ -167,7 +167,7 @@ namespace Platformer
         {
             input.Jump += OnJump;
             input.Dash += OnDash;
-            input.Attack += OnAttack;
+            //input.Attack += OnAttack;
 
         }
 
@@ -175,32 +175,32 @@ namespace Platformer
         {
             input.Jump -= OnJump;
             input.Dash -= OnDash;
-            input.Attack -= OnAttack;
+            //input.Attack -= OnAttack;
 
         }
 
-        void OnAttack()
-        {
-            if (!attackTimer.IsRunning)
-            {
-                attackTimer.Start();
-            }
-        }
+        //void OnAttack()
+        //{
+        //    if (!attackTimer.IsRunning)
+        //    {
+        //        attackTimer.Start();
+        //    }
+        //}
 
-        public void Attack()
-        {
-            Vector3 attackPos = transform.position + transform.forward;
-            Collider[] hitEnemies = Physics.OverlapSphere(attackPos, attackDistance);
+        //public void Attack()
+        //{
+        //    Vector3 attackPos = transform.position + transform.forward;
+        //    Collider[] hitEnemies = Physics.OverlapSphere(attackPos, attackDistance);
 
-            foreach (var enemy in hitEnemies)
-            {
-                Debug.Log(enemy.name);
-                if (enemy.CompareTag("Enemy"))
-                {
-                    enemy.GetComponent<Health>().TakeDamage(attackDamage);
-                }
-            }
-        }
+        //    foreach (var enemy in hitEnemies)
+        //    {
+        //        Debug.Log(enemy.name);
+        //        if (enemy.CompareTag("Enemy"))
+        //        {
+        //            enemy.GetComponent<Health>().TakeDamage(attackDamage);
+        //        }
+        //    }
+        //}
 
         void OnJump(bool performed)
         {

@@ -11,8 +11,8 @@ namespace DialogueSystem
         public string npcName; // Name of the NPC 
         //public List<string> Sentence;
 
-        // this define the trigger word or phrase
-        public List<CutsceneSO> cutscenes;
+        //// this define the trigger word or phrase
+        //public List<CutsceneSO> cutscenes;
 
         public List<SentenceData> sentencesData;
     }

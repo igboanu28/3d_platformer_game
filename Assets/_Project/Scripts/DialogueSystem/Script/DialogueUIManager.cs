@@ -76,40 +76,66 @@ namespace DialogueSystem
 
         public void DisplayCurrentSentence()
         {
-            //Debug.Log($"Displaying sentence {currentSentenceIndex + 1} of {currentDialogue.Sentence.Count}");
-            if (currentDialogue == null || currentSentenceIndex >= currentDialogue.sentencesData.Count)
+            var sentenceData = currentDialogue.sentencesData[currentSentenceIndex];
+
+            if (sentenceData.cutscene != null)
             {
-                EndDialogue();
+                PauseDialogue();
+                nextButton.text = "Skip";
+                cutsceneEventChannel?.Invoke(sentenceData.cutscene);
                 return;
             }
-            //Debug.Log("Starting");
-            currentSentence.text = currentDialogue.sentencesData[currentSentenceIndex].sentence;
 
-            if(currentDialogue.sentencesData[currentSentenceIndex].cutscene != null)
-            {
-                Debug.Log($"Triggering cutscene: {currentDialogue.sentencesData[currentSentenceIndex].cutscene.id}");
+            // Otherwise, display the sentence
+            ResumeDialogue();
+            currentSentence.text = sentenceData.sentence;
+            nextButton.text = currentSentenceIndex == currentDialogue.sentencesData.Count - 1 ? "Close" : "Next";
 
-                // Change the button text to "Skip"
-                nextButton.text = "Skip";
+            ////Debug.Log($"Displaying sentence {currentSentenceIndex + 1} of {currentDialogue.Sentence.Count}");
+            //if (currentDialogue == null || currentSentenceIndex >= currentDialogue.sentencesData.Count)
+            //{
+            //    EndDialogue();
+            //    return;
+            //}
+            ////Debug.Log("Starting");
+            //currentSentence.text = currentDialogue.sentencesData[currentSentenceIndex].sentence;
 
-                cutsceneEventChannel?.Invoke(currentDialogue.sentencesData[currentSentenceIndex].cutscene);
-            }
-            else
-            {
-                // Change the button text to "Next"
-                nextButton.text = "Next"; // which is the default text
-            }
+            //if(currentDialogue.sentencesData[currentSentenceIndex].cutscene != null)
+            //{
+            //    Debug.Log($"Triggering cutscene: {currentDialogue.sentencesData[currentSentenceIndex].cutscene.id}");
+
+            //    // Change the button text to "Skip"
+            //    nextButton.text = "Skip";
+
+            //    cutsceneEventChannel?.Invoke(currentDialogue.sentencesData[currentSentenceIndex].cutscene);
+            //}
+            //else
+            //{
+            //    // Change the button text to "Next"
+            //    nextButton.text = "Next"; // which is the default text
+            //}
 
         }
 
         public void PauseDialogue()
         {
-            dialoguePanel.SetEnabled(false);
+            npcNameText.visible = false;
+            currentSentence.visible = false;
+
+            nextButton.text = "Skip"; // Change the button text to "Skip"
+            nextButton.SetEnabled(true);
         }
 
         public void ResumeDialogue()
         {
-            dialoguePanel.SetEnabled(true);
+            npcNameText.visible = true;
+            currentSentence.visible = true;
+
+            // Reset button text if needed
+            if (currentSentenceIndex == currentDialogue.sentencesData.Count - 1)
+                nextButton.text = "Close";
+            else
+                nextButton.text = "Next";
         }
 
 
