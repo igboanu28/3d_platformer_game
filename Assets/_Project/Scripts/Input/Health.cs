@@ -19,19 +19,29 @@ namespace Platformer
 
         void Start()
         {
-            PublishHealthPercentage();
+            //PublishHealthPercentage();
         }
 
         public void TakeDamage(int damage)
         {
             currentHealth -= damage;
-            PublishHealthPercentage();
+            //PublishHealthPercentage();
+
+            if (currentHealth <= 0)
+            {
+                Die();
+            }
         }
 
-        void PublishHealthPercentage()
+        public void Die()
         {
-            if (playerHealthChannel != null)
-                playerHealthChannel.Invoke(currentHealth / (float)maxHealth);
+            
         }
+
+        //void PublishHealthPercentage()
+        //{
+        //    if (playerHealthChannel != null)
+        //        playerHealthChannel.Invoke(currentHealth / (float)maxHealth);
+        //}
     }
 }
