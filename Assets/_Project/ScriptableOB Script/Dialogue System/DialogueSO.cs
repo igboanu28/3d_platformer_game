@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DialogueSystem
 {
-    [CreateAssetMenu(fileName = "Dialogue", menuName = "Dialogue/DialogueSO")]
+    [CreateAssetMenu(fileName = "Dialogue", menuName = "Scriptable Objects/Dialogue/DialogueSO")]
     public class DialogueSO : ScriptableObject
     {
         public string id = Guid.NewGuid().ToString(); // Unique identifier

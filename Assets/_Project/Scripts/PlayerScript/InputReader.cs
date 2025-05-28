@@ -10,7 +10,7 @@ namespace Platformer
 
 
     // before making an input reader i needed to create asset menu attribute to the scriptable object
-    [CreateAssetMenu(fileName = "InputReader", menuName = "Player/InputReader")]
+    [CreateAssetMenu(fileName = "InputReader", menuName = "Scriptable Objects/input/InputReader")]
     public class InputReader : ScriptableObject, IPlayerActions
     {
         //so here i add an event for when different things happen which i used unity action for that

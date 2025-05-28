@@ -5,7 +5,7 @@ using System;
 
 namespace Platformer
 {
-    [CreateAssetMenu(fileName = "New Quest", menuName = "Quest System/Create New Quest")]
+    [CreateAssetMenu(fileName = "New Quest", menuName = "Scriptable Objects/Quest/Create New Quest")]
     public class QuestData : ScriptableObject
     {
         // Basic quest information

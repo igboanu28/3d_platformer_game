@@ -6,7 +6,7 @@ using DialogueSystem;
 
 namespace DialogueSystem
 {
-    [CreateAssetMenu(fileName = "DialogueListSO", menuName = "Dialogue/DialogueListSO")]
+    [CreateAssetMenu(fileName = "DialogueListSO", menuName = "Scriptable Objects/Dialogue/DialogueListSO")]
     public class DialogueListSO : ScriptableObject
     {
         public string id = Guid.NewGuid().ToString(); // Unique identifier

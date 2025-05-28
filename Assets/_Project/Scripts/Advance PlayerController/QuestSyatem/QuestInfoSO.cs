@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Platformer
 {
-    [CreateAssetMenu(fileName = "QuestInfoSO", menuName = "ScriptableObjects/QuestInfoSO", order = 1)]
+    [CreateAssetMenu(fileName = "QuestInfoSO", menuName = "Scriptable Objects/Quest/Advance QuestInfoSO", order = 1)]
     public class QuestInfoSO : ScriptableObject
     {
         [field: SerializeField] public string id { get; private set; }

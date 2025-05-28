@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Platformer
 {
-    [CreateAssetMenu(fileName = "CollectibleDate", menuName = "Platformer/Collectible Data")]
+    [CreateAssetMenu(fileName = "CollectibleDate", menuName = "Scriptable Objects/Collectible Data")]
     public class CollectibleData : EntityData
     {
         public int score;

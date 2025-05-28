@@ -20,8 +20,7 @@ namespace CombatSystem
         private float nextAttackTime = 0f;
 
         private int comboStep = 0;
-        private float lastAttackTime = 0f;
-        public float comboResetTime = 1f; // Time to reset combo if no attacks are made
+        public float knockbackForce = 5f; // Force applied to enemies on hit
 
         private void OnEnable()
         {
@@ -41,29 +40,30 @@ namespace CombatSystem
         {
             if (Time.time >= nextAttackTime)
             {
-                if (Time.time - lastAttackTime > comboResetTime)
-                {
-                    comboStep = 0; // Reset combo if too much time has passed
-                }
-
+                // loop back to the first combo
                 comboStep++;
-                lastAttackTime = Time.time;
+                if (comboStep > 3)
+                    comboStep = 1;
+
                 nextAttackTime = Time.time + 1f / attackRate; // Calculate the next attack time
 
                 switch (comboStep)
                 {
                     case 1:
                         animator.SetTrigger("Attack");
+                        Debug.Log($"Combo Step: {comboStep}");
                         EnemyDamage(10);
                         break;
 
                     case 2:
-                        animator.SetTrigger("Attack2");
+                        animator.SetTrigger("Attack_combo");
+                        Debug.Log($"Combo Step: {comboStep}");
                         EnemyDamage(15);
                         break;
 
                     case 3:
-                        animator.SetTrigger("Attack3");
+                        animator.SetTrigger("jump_attack");
+                        Debug.Log($"Combo Step: {comboStep}");
                         EnemyDamage(20);
                         comboStep = 0; // Reset combo after third attack
                         break;
@@ -131,6 +131,10 @@ namespace CombatSystem
                 {
                     health.TakeDamage(attackDamage);
                     Debug.Log("light damage");
+                    var rb = enemy.GetComponent<Rigidbody>();
+                    if (rb != null)
+                        rb.AddForce((enemy.transform.position - attackPoint.position).normalized * knockbackForce, ForceMode.Impulse);
+
                 }
             }
         }

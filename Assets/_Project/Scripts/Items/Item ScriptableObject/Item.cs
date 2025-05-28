@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Platformer
 {
-    [CreateAssetMenu(fileName ="New Item",menuName ="Item/Create New Item")]
+    [CreateAssetMenu(fileName ="New Item",menuName = "Scriptable Objects/Create New Item")]
     public class Item : ScriptableObject
     {
         public int id;

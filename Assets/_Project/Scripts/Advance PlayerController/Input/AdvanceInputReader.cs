@@ -9,7 +9,7 @@ public interface IInputReader
     void EnablePlayerActions();
 }
 
-[CreateAssetMenu(fileName = "AdvanceInputReader", menuName = "AdvanceInputReader")]
+[CreateAssetMenu(fileName = "AdvanceInputReader", menuName = "Scriptable Objects/input/AdvanceInputReader")]
 public class AdvanceInputReader : ScriptableObject, IPlayerActions, IInputReader
 {
     public event UnityAction<Vector2> Move = delegate { };
