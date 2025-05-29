@@ -7,13 +7,13 @@ namespace CombatSystem
 {
     public class PlayerCombat : MonoBehaviour
     {
+        [SerializeField] InputReader inputReader;
         public List<AttackSO> combo;
         float lastClickedTime;
         float lastComboEnd;
         int combotStep;
         Animator animator;
-        Weapon weapon;
-        [SerializeField] InputReader inputReader;
+        [SerializeField] Weapon weapon;
 
         void Start()
         {
@@ -22,6 +22,10 @@ namespace CombatSystem
 
         void Update()
         {
+            //if (Input.GetButtonDown("LightAttack"))
+            //{
+            //    OnlightAttack();
+            //}
             ExitLightAttack();
         }
 
@@ -41,7 +45,7 @@ namespace CombatSystem
         }
         void OnlightAttack()
         {
-            if (Time.time - lastComboEnd > 0.5f && combotStep <= combo.Count)
+            if (Time.time - lastComboEnd > 2f && combotStep <= combo.Count)
             {
                 CancelInvoke("EndCombo");
                 if (Time.time - lastClickedTime >= 0.2f)
@@ -52,7 +56,7 @@ namespace CombatSystem
                     combotStep++;
                     lastClickedTime = Time.time;
 
-                    if (combotStep > combo.Count)
+                    if (combotStep >= combo.Count)
                     {
                         combotStep = 0; // Reset combo step if it exceeds the count
                     }
@@ -62,7 +66,7 @@ namespace CombatSystem
 
         void ExitLightAttack()
         {
-            if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.9 && animator.GetCurrentAnimatorStateInfo(0).IsTag("LightAttack"))
+            if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 5 && animator.GetCurrentAnimatorStateInfo(0).IsTag("LightAttack"))
             { 
                 Invoke("EndCombo", 1); // Delay to allow the animation to finish
             }
