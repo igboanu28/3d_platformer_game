@@ -19,7 +19,7 @@ namespace Platformer
             IsRunning = false;
         }
 
-        public void Start()
+        public virtual void Start()
         {
             Time = initiaTime;
             if (!IsRunning)
@@ -29,7 +29,7 @@ namespace Platformer
             }
         }
 
-        public void Stop()
+        public virtual void Stop()
         {
             if (IsRunning)
             {
@@ -42,6 +42,9 @@ namespace Platformer
         public void Pause() => IsRunning = false;
 
         public abstract void Tick(float deltaTime);
+
+        public float RemainingSeconds => Time;
+        public float InitialDuration => initiaTime;
     }
 
     // countdown/cooldown timer
@@ -64,12 +67,27 @@ namespace Platformer
 
         public bool IsFinished => Time <= 0;
 
-        public void Reset() => Time = initiaTime;
+        public void Reset()
+        {
+            Time = initiaTime;
+            IsRunning = false;
+        }
 
         public void Reset(float newTime)
         {
             initiaTime = newTime;
             Reset();
+        }
+
+        // IMPORTANT MODIFICATION: Ensure Time is set to 0 when explicitly stopped
+        public override void Stop()
+        {
+            if (IsRunning)
+            {
+                IsRunning = false;
+                Time = 0; // Explicitly set time to 0 to signal completion
+                OnTimerStop.Invoke();
+            }
         }
     }
 
