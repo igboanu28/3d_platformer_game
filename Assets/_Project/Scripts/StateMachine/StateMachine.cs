@@ -25,6 +25,10 @@ namespace Platformer
 
         public void SetState(IState state)
         {
+            if (current != null && current.State != state)
+            {
+                current.State?.OnExit();
+            }
             current = nodes[state.GetType()];
             current.State?.OnEnter();
         }
@@ -33,12 +37,14 @@ namespace Platformer
         {
             if (state == current.State) return;
 
-            var previousState = current.State;
-            var nextState = nodes[state.GetType()].State;
+            // Call on the current state
+            current.State?.OnExit();
 
-            previousState?.OnExit();
-            nextState?.OnEnter();
+            // Update the current node to the new state
             current = nodes[state.GetType()];
+
+            // Call OnEnter on the new state
+            current.State?.OnEnter();
         }
 
         ITransition GetTransition()
@@ -66,9 +72,8 @@ namespace Platformer
 
         StateNode GetOrAddNode(IState state)
         {
-            var node = nodes.GetValueOrDefault(state.GetType());
-
-            if (node == null)
+            // Using TryGetValue to advoid exceptions if key doesn't exist
+            if (!nodes.TryGetValue(state.GetType(), out StateNode node))
             { 
                 node = new StateNode(state);
                 nodes.Add(state.GetType(), node);
@@ -92,6 +97,12 @@ namespace Platformer
             {
                 Transitions.Add(new Transition(to, condition));
             }
+        }
+
+        // Helper to check if the current state is of a specific type (useful for external checks)
+        public bool IsCurrentState<T>() where T : IState
+        {
+            return current.State is T;
         }
     }
 }
