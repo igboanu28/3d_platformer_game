@@ -60,15 +60,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SpinAttack",
-                    "type": "Button",
-                    "id": "c575cbf8-02a5-414d-b0a3-de39f720f46a",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "HeavyAttack",
                     "type": "Button",
                     "id": "027469ad-c413-4124-96b6-9962b623d4f2",
@@ -362,28 +353,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "LightAttack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "ea5abb03-23e3-490e-8ac2-3b84aca6dee0",
-                    "path": "<Gamepad>/buttonWest",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "SpinAttack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1676a82d-c4a8-46f3-a12b-125249004a15",
-                    "path": "<Keyboard>/g",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SpinAttack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

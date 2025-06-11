@@ -75,7 +75,7 @@ namespace Enemy
             if (attackTimer.IsRunning) return;
 
             attackTimer.Start();
-            playerDetector.PlayerHealth.TakeDamage(10);
+            //playerDetector.PlayerHealth.TakeDamage(10);
         }
 
 

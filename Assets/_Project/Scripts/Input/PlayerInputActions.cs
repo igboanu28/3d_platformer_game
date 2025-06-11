@@ -82,15 +82,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""SpinAttack"",
-                    ""type"": ""Button"",
-                    ""id"": ""c575cbf8-02a5-414d-b0a3-de39f720f46a"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""HeavyAttack"",
                     ""type"": ""Button"",
                     ""id"": ""027469ad-c413-4124-96b6-9962b623d4f2"",
@@ -384,28 +375,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""LightAttack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""ea5abb03-23e3-490e-8ac2-3b84aca6dee0"",
-                    ""path"": ""<Gamepad>/buttonWest"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Gamepad"",
-                    ""action"": ""SpinAttack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""1676a82d-c4a8-46f3-a12b-125249004a15"",
-                    ""path"": ""<Keyboard>/g"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SpinAttack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1021,7 +990,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Run = m_Player.FindAction("Run", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_LightAttack = m_Player.FindAction("LightAttack", throwIfNotFound: true);
-        m_Player_SpinAttack = m_Player.FindAction("SpinAttack", throwIfNotFound: true);
         m_Player_HeavyAttack = m_Player.FindAction("HeavyAttack", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
@@ -1108,7 +1076,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Run;
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_LightAttack;
-    private readonly InputAction m_Player_SpinAttack;
     private readonly InputAction m_Player_HeavyAttack;
     public struct PlayerActions
     {
@@ -1120,7 +1087,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Run => m_Wrapper.m_Player_Run;
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @LightAttack => m_Wrapper.m_Player_LightAttack;
-        public InputAction @SpinAttack => m_Wrapper.m_Player_SpinAttack;
         public InputAction @HeavyAttack => m_Wrapper.m_Player_HeavyAttack;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
@@ -1149,9 +1115,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @LightAttack.started += instance.OnLightAttack;
             @LightAttack.performed += instance.OnLightAttack;
             @LightAttack.canceled += instance.OnLightAttack;
-            @SpinAttack.started += instance.OnSpinAttack;
-            @SpinAttack.performed += instance.OnSpinAttack;
-            @SpinAttack.canceled += instance.OnSpinAttack;
             @HeavyAttack.started += instance.OnHeavyAttack;
             @HeavyAttack.performed += instance.OnHeavyAttack;
             @HeavyAttack.canceled += instance.OnHeavyAttack;
@@ -1177,9 +1140,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @LightAttack.started -= instance.OnLightAttack;
             @LightAttack.performed -= instance.OnLightAttack;
             @LightAttack.canceled -= instance.OnLightAttack;
-            @SpinAttack.started -= instance.OnSpinAttack;
-            @SpinAttack.performed -= instance.OnSpinAttack;
-            @SpinAttack.canceled -= instance.OnSpinAttack;
             @HeavyAttack.started -= instance.OnHeavyAttack;
             @HeavyAttack.performed -= instance.OnHeavyAttack;
             @HeavyAttack.canceled -= instance.OnHeavyAttack;
@@ -1371,7 +1331,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnRun(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnLightAttack(InputAction.CallbackContext context);
-        void OnSpinAttack(InputAction.CallbackContext context);
         void OnHeavyAttack(InputAction.CallbackContext context);
     }
     public interface IUIActions

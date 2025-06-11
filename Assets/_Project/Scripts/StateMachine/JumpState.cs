@@ -2,22 +2,19 @@
 
 namespace Platformer
 {
-    public class JumpState : BaseState 
+    public class JumpState : BaseState
     {
-        public JumpState(PlayerController player, Animator animator) : base(player, animator)
-        {
-        }
-
-        public override void OnEnter()
-        {
-            Debug.Log("JumpState.OnEnter");
-            animator.CrossFade(JumpHash, crossFadeDuration);
-        }
-
+        public JumpState(PlayerController player, UnityEngine.Animator animator) : base(player, animator) { }
+        public override void OnEnter() => player.PerformJump();
         public override void FixedUpdate()
         {
-            player.HandleJump();
-            player.HandleMovement();
+            player.HandleMovementAndRotation(); // For air control
+            player.HandleGravity();
+        }
+        public override void OnExit()
+        {
+            player.JumpHoldTimer.Stop();
+            player.CoyoteTimer.Stop();
         }
     }
 }

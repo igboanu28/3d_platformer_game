@@ -20,8 +20,8 @@ namespace Platformer
         public event UnityAction DisableMouseControlCamera = delegate { };
         public event UnityAction<bool> Jump = delegate { };
         public event UnityAction<bool> Dash = delegate { };
+        public event UnityAction JumpCancelledEvent = delegate { }; // This can be used to notify when jump is cancelled, e.g., by landing or stopping the jump early.
         public event UnityAction LightAttack = delegate { };
-        public event UnityAction SpinAttack = delegate { };
         public event UnityAction HeavyAttack = delegate { };
         public bool IsInputEnabled { get; private set; } = true;
 
@@ -36,6 +36,12 @@ namespace Platformer
                 inputActions = new PlayerInputActions();
                 inputActions.Player.SetCallbacks(this);
             }
+            EnablePlayerActions();
+        }
+
+        void OnDisable()
+        {
+            DisablePlayerActions();
         }
 
         public void EnablePlayerActions()
@@ -71,13 +77,7 @@ namespace Platformer
             }
         }
 
-        public void OnSpinAttack(InputAction.CallbackContext context)
-        {
-            if (IsInputEnabled || context.phase == InputActionPhase.Started)
-            { 
-                SpinAttack?.Invoke();
-            }
-        }
+        
 
         public void OnHeavyAttack(InputAction.CallbackContext context)
         {
@@ -103,6 +103,7 @@ namespace Platformer
 
         public void OnRun(InputAction.CallbackContext context)
         {
+            Debug.Log("run input received");
             if (!IsInputEnabled) return;
             switch (context.phase)
             {
@@ -117,6 +118,7 @@ namespace Platformer
 
         public void OnJump(InputAction.CallbackContext context)
         {
+            Debug.Log("Jump input received");
             if (!IsInputEnabled) return;
             switch (context.phase)
             {

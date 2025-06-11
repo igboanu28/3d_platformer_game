@@ -1,24 +1,27 @@
-﻿//using UnityEngine;
+﻿using CombatSystem;
+using UnityEngine;
 
-//namespace Platformer
-//{
-//    public class AttackState : BaseState
-//    {
-//        public AttackState(PlayerController player, Animator animator) : base(player, animator)
-//        {
+namespace Platformer
+{
+    public class AttackState : IState
+    {
+        private readonly PlayerController _player;
+        private readonly PlayerCombat _playerCombat;
+        public AttackState(PlayerController player, PlayerCombat playerCombat)
+        {
+            _player = player;
+            _playerCombat = playerCombat;
+
+        }
+
+        public void OnEnter()
+        {
             
-//        }
+        }
 
-//        public override void OnEnter()
-//        {
-//            animator.CrossFade(AttackHash, crossFadeDuration);
-//            player.Attack();
-//        }
+        public void FixedUpdate()
+        {
+        }
 
-//        public override void FixedUpdate()
-//        {
-//            player.HandleMovement();
-//        }
-
-//    }
-//}
+    }
+}

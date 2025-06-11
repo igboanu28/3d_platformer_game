@@ -1,8 +1,11 @@
 using DialogueSystem;
 using KBCore.Refs;
+using System;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using CombatSystem;
+using System.Runtime.CompilerServices;
 
 namespace Platformer
 {
@@ -12,333 +15,233 @@ namespace Platformer
        and that way we don't have to do a bunch of get components calls in awake or start which can have a fairly affect
         on my scene load time 
      */
-    public class PlayerController : ValidatedMonoBehaviour
+    public class PlayerController : MonoBehaviour
     {
-        public static PlayerController Instance; // Singleton instance
-        [Header("References")]
-        [SerializeField, Self] Rigidbody rb;
-        [SerializeField, Self] GroundChecker groundChecker;
-        [SerializeField, Self] Animator animator;
-        [SerializeField, Anywhere] CinemachineCamera freeLookVCam;
-        [SerializeField, Anywhere] InputReader input;
+        [Header("Component References")]
+        [SerializeField] private Rigidbody rb;
+        [SerializeField] private GroundChecker groundChecker;
+        [SerializeField] private Animator animator;
+        [SerializeField] private InputReader inputReader; // YOUR InputReader script
+        [SerializeField] private PlayerCombat playerCombat;
 
         [Header("Movement Settings")]
-        [SerializeField] float moveSpeed = 6f;
-        [SerializeField] float rotationSpeed = 15f;
+        [SerializeField] private float moveSpeed = 6f;
+        [SerializeField] private float rotationSpeed = 1080f;
+        [SerializeField] private float movementSmoothTime = 0.1f;
 
-        /* For the smoothTime its for how fast the animator will change it's speed but we don't
-         need to worry about it too much for the character controller itself because it handles it own velocity
-         */
-        [SerializeField] float smoothTime = 0.2f;
+        [Header("Jump Settings")]
+        [SerializeField] private float jumpForce = 12f;
+        [SerializeField] private float jumpHoldDuration = 0.35f;
+        [SerializeField] private float jumpCooldownDuration = 0.2f;
+        [SerializeField] private float coyoteTimeDuration = 0.15f;
+        [SerializeField] private float jumpBufferDuration = 0.15f;
+        [SerializeField] private float gravityMultiplier = 3f;
 
-        [Header("Player Stats")]
-        public int coins = 0; // Tracks coins
+        [Header("Dash Settings")]
+        [SerializeField] private float dashForce = 20f;
+        [SerializeField] private float dashDuration = 0.25f;
+        [SerializeField] private float dashCooldownDuration = 0.8f;
 
+        // Timers
+        public CountdownTimer JumpHoldTimer { get; private set; }
+        public CountdownTimer JumpCooldownTimer { get; private set; }
+        public CountdownTimer CoyoteTimer { get; private set; }
+        public CountdownTimer JumpBufferTimer { get; private set; }
+        public CountdownTimer DashTimer { get; private set; }
+        public CountdownTimer DashCooldownTimer { get; private set; }
+        private List<Timer> _timers;
 
-        [Header("Jump Setting")]
-        [SerializeField] float jumpForce = 10f;
-        [SerializeField] float jumpDuration = 0.5f;
-        [SerializeField] float jumpCooldown = 0f;
-        [SerializeField] float gravityMultiplier = 3f;
+        // Public Properties for States
+        public Rigidbody Rb => rb;
+        public Animator Animator => animator;
+        public GroundChecker GroundChecker => groundChecker;
+        public PlayerCombat PlayerCombat => playerCombat;
+        public Vector3 MovementInput { get; private set; }
 
-        [Header("Dash Setting")]
-        [SerializeField] float dashForce = 10f;
-        [SerializeField] float dashDuration = 1f;
-        [SerializeField] float dashCooldown = 2f;
+        private Transform _mainCamTransform;
+        private StateMachine _stateMachine;
+        private Vector3 _targetMoveDirection;
+        private float _currentHorizontalSpeed;
+        private float _speedSmoothVelocity;
+        private bool _isDashBuffered = false;
 
-        [Header("Attack Settings")]
-        [SerializeField] float attackCooldown = 0.5f;
-        //[SerializeField] float attackDistance = 1f;
-        //[SerializeField] int attackDamage = 10;
-
-        const float ZeroF = 0f;
-
-        Transform mainCam;
-
-        float currentSpeed;
-        float velocity;
-        float jumpVelocity;
-        float dashVelocity = 1f;
-
-        Vector3 movement;
-
-        List<Timer> timers;
-        CountdownTimer jumpTimer;
-        CountdownTimer jumpCooldownTimer;
-        CountdownTimer dashTimer;
-        CountdownTimer dashCooldownTimer;
-        CountdownTimer attackTimer;
-
-        StateMachine stateMachine;
-
-        // Animation parameters
-        static readonly int Speed = Animator.StringToHash("Speed");
-
-        [SerializeField, Anywhere] private BoolEventChannel dialogueEventChannel;
-
-
+        // Animator Hashes
+        private static readonly int AnimSpeed = Animator.StringToHash("Speed");
+        private static readonly int AnimIsGrounded = Animator.StringToHash("IsGrounded");
+        private static readonly int AnimJumpTrigger = Animator.StringToHash("Jump");
+        private static readonly int AnimDashTrigger = Animator.StringToHash("Dash");
 
         void Awake()
         {
-            mainCam = Camera.main.transform;
-            freeLookVCam.Follow = transform;
-            freeLookVCam.LookAt = transform;
-            // Invoke event when observed trnsform is teleported, adjusting freeLookVCam's position accordingly
-            freeLookVCam.OnTargetObjectWarped(transform, transform.position - freeLookVCam.transform.position - Vector3.forward);
+            if (rb == null) rb = GetComponent<Rigidbody>();
+            if (groundChecker == null) groundChecker = GetComponent<GroundChecker>();
+            if (animator == null) animator = GetComponent<Animator>();
+            if (playerCombat == null) playerCombat = GetComponent<PlayerCombat>();
+            if (inputReader == null) Debug.LogError("InputReader NOT ASSIGNED in PlayerController!", this);
 
+            _mainCamTransform = Camera.main?.transform;
             rb.freezeRotation = true;
 
             SetupTimers();
-
             SetupStateMachine();
         }
 
-        // Add coins to the player's stats
-        public void AddCoins(int amount)
-        {
-            coins += amount;
-            GameManager.Instance.AddScore(amount); // Update the score in GameManager
-            Debug.Log($"Player earned {amount} coins! Total Coins: {coins}");
-        }
-
-
-        private void SetupStateMachine()
-        {
-            // State Machine new instance
-            stateMachine = new StateMachine();
-
-            // Declare states
-            var locomotionState = new LocomotionState(this, animator);
-            var jumpState = new JumpState(this, animator);
-            var dashState = new DashState(this, animator);
-            //var attackState = new AttackState(this, animator);
-
-
-            // Define transitions
-            At(locomotionState, jumpState, new FuncPredicate(() => jumpTimer.IsRunning));
-            At(locomotionState, dashState, new FuncPredicate(() => dashTimer.IsRunning));
-            //At(locomotionState, attackState, new FuncPredicate(() => attackTimer.IsRunning));
-            //At(attackState locomotionState, new FuncPredicate(() => !attackTimer.IsRunning));
-            Any(locomotionState, new FuncPredicate(ReturnToLocomotionState));
-            
-            
-            // Set initial state
-            stateMachine.SetState(locomotionState);
-        }
-
-        bool ReturnToLocomotionState()
-        {
-            return groundChecker.IsGrounded 
-                && !attackTimer.IsRunning 
-                && !jumpTimer.IsRunning 
-                && !dashTimer.IsRunning;
-        }
-
-        void SetupTimers()
-        {
-            // Setup timers
-            jumpTimer = new CountdownTimer(jumpDuration);
-            jumpCooldownTimer = new CountdownTimer(jumpCooldown);
-
-            jumpTimer.OnTimerStart += () => jumpVelocity = jumpForce;
-            jumpTimer.OnTimerStop += () => jumpCooldownTimer.Start();
-
-            dashTimer = new CountdownTimer(dashDuration);
-            dashCooldownTimer = new CountdownTimer(dashCooldown);
-            dashTimer.OnTimerStart += () => dashVelocity = dashForce;
-
-            dashTimer.OnTimerStop += () =>
-            {
-                dashVelocity = 1f;
-                dashCooldownTimer.Start();
-            };
-
-            attackTimer = new CountdownTimer(attackCooldown);
-
-            timers = new List<Timer>(capacity: 2) { jumpTimer, jumpCooldownTimer, dashTimer, dashCooldownTimer, attackTimer };
-        }
-
-        void At(IState from, IState to, IPredicate condition) => stateMachine.AddTransition(from, to, condition);
-        void Any(IState to, IPredicate condition) => stateMachine.AddAnyTransition(to, condition);
-
-        void Start() => input.EnablePlayerActions();
-
         private void OnEnable()
         {
-            input.Jump += OnJump;
-            input.Dash += OnDash;
-            //input.Attack += OnAttack;
-
+            if (inputReader == null) return;
+            inputReader.Move += OnMove;
+            inputReader.Jump += OnJumpInput;
+            inputReader.Dash += OnDashInput;
+            inputReader.LightAttack += OnLightAttack;
+            inputReader.HeavyAttack += OnHeavyAttack;
+            //if (groundChecker != null) groundChecker.OnLeftGround += StartCoyoteTimer;
         }
 
         private void OnDisable()
         {
-            input.Jump -= OnJump;
-            input.Dash -= OnDash;
-            //input.Attack -= OnAttack;
-
-        }
-
-        //void OnAttack()
-        //{
-        //    if (!attackTimer.IsRunning)
-        //    {
-        //        attackTimer.Start();
-        //    }
-        //}
-
-        //public void Attack()
-        //{
-        //    Vector3 attackPos = transform.position + transform.forward;
-        //    Collider[] hitEnemies = Physics.OverlapSphere(attackPos, attackDistance);
-
-        //    foreach (var enemy in hitEnemies)
-        //    {
-        //        Debug.Log(enemy.name);
-        //        if (enemy.CompareTag("Enemy"))
-        //        {
-        //            enemy.GetComponent<Health>().TakeDamage(attackDamage);
-        //        }
-        //    }
-        //}
-
-        void OnJump(bool performed)
-        {
-            if (performed && !jumpTimer.IsRunning && !jumpCooldownTimer.IsRunning && groundChecker.IsGrounded)
-            {
-                jumpTimer.Start();
-            }
-            else if (!performed && jumpTimer.IsRunning)
-            { 
-                jumpTimer.Stop();
-            }
-        }
-
-        void OnDash(bool performed)
-        {
-            if (performed && !dashTimer.IsRunning && !dashCooldownTimer.IsRunning)
-            {
-                dashTimer.Start();
-            }
-            else if (!performed && dashTimer.IsRunning)
-            {
-                dashTimer.Stop();
-            }
+            if (inputReader == null) return;
+            inputReader.Move -= OnMove;
+            inputReader.Jump -= OnJumpInput;
+            inputReader.Dash -= OnDashInput;
+            inputReader.LightAttack -= OnLightAttack;
+            inputReader.HeavyAttack -= OnHeavyAttack;
+            //if (groundChecker != null) groundChecker.OnLeftGround -= StartCoyoteTimer;
         }
 
         void Update()
         {
-            //if (input.IsInputEnabled)
-            movement = input.IsInputEnabled ? new Vector3(input.Direction.x, 0f, input.Direction.y) : new Vector3(ZeroF, ZeroF, ZeroF);
-            stateMachine.Update();
-
-            HandleTimers();
+            foreach (var timer in _timers) timer.Tick(Time.deltaTime);
+            _stateMachine.Update(); // Use your StateMachine's Update method
             UpdateAnimator();
         }
 
         void FixedUpdate()
         {
-            //if (!input.IsInputEnabled) return;
-            stateMachine.FixedUpdate();
+            _stateMachine.FixedUpdate(); // Use your StateMachine's FixedUpdate method
         }
+
+        void SetupTimers()
+        {
+            JumpHoldTimer = new CountdownTimer(jumpHoldDuration);
+            JumpCooldownTimer = new CountdownTimer(jumpCooldownDuration);
+            CoyoteTimer = new CountdownTimer(coyoteTimeDuration);
+            JumpBufferTimer = new CountdownTimer(jumpBufferDuration);
+            DashTimer = new CountdownTimer(dashDuration);
+            DashCooldownTimer = new CountdownTimer(dashCooldownDuration);
+            _timers = new List<Timer> { JumpHoldTimer, JumpCooldownTimer, CoyoteTimer, JumpBufferTimer, DashTimer, DashCooldownTimer };
+            JumpHoldTimer.OnTimerStop += JumpCooldownTimer.Start;
+            DashTimer.OnTimerStop += DashCooldownTimer.Start;
+        }
+
+        void SetupStateMachine()
+        {
+            _stateMachine = new StateMachine();
+            var locomotionState = new LocomotionState(this, animator);
+            var jumpState = new JumpState(this, animator);
+            var dashState = new DashState(this, animator);
+            var attackState = new AttackState(this, playerCombat);
+
+            At(locomotionState, jumpState, new FuncPredicate(CanJump));
+            At(locomotionState, dashState, new FuncPredicate(() => _isDashBuffered && CanDash()));
+            At(locomotionState, attackState, new FuncPredicate(() => playerCombat.IsAttacking));
+
+            At(jumpState, dashState, new FuncPredicate(() => _isDashBuffered && CanDash()));
+            At(jumpState, attackState, new FuncPredicate(() => playerCombat.IsAttacking));
+            At(jumpState, locomotionState, new FuncPredicate(() => groundChecker.IsGrounded && rb.linearVelocity.y <= 0.01f));
+
+            At(dashState, locomotionState, new FuncPredicate(() => !DashTimer.IsRunning && groundChecker.IsGrounded));
+            At(dashState, jumpState, new FuncPredicate(() => !DashTimer.IsRunning && !groundChecker.IsGrounded));
+
+            At(attackState, locomotionState, new FuncPredicate(() => !playerCombat.IsAttacking && groundChecker.IsGrounded));
+            At(attackState, jumpState, new FuncPredicate(() => !playerCombat.IsAttacking && !groundChecker.IsGrounded));
+
+            _stateMachine.SetState(locomotionState);
+        }
+        void At(IState from, IState to, IPredicate condition) => _stateMachine.AddTransition(from, to, condition);
+
+
+        // --- Input Handling (Adapted for YOUR InputReader) ---
+        private void OnMove(Vector2 rawInput) => MovementInput = new Vector3(rawInput.x, 0, rawInput.y);
+        private void OnJumpInput(bool performed)
+        {
+            if (performed) JumpBufferTimer.Start();
+            else { if (JumpHoldTimer.IsRunning && rb.linearVelocity.y > 0) JumpHoldTimer.Stop(); }
+        }
+        private void OnDashInput(bool performed)
+        {
+            if (performed) _isDashBuffered = true;
+        }
+        private void OnLightAttack() => playerCombat?.ReceiveLightAttackInput();
+        private void OnHeavyAttack() => playerCombat?.ReceiveHeavyAttackInput();
+
+
+        // --- Action Conditions ---
+        private bool CanJump() => JumpBufferTimer.IsRunning && (groundChecker.IsGrounded || CoyoteTimer.IsRunning) && !JumpCooldownTimer.IsRunning;
+        private bool CanDash() => !DashTimer.IsRunning && !DashCooldownTimer.IsRunning;
+
+
+        // --- Physics & Movement Methods (Called by States) ---
+        public void HandleMovementAndRotation()
+        {
+            if (_mainCamTransform == null) return;
+            Vector3 camForward = Vector3.Scale(_mainCamTransform.forward, new Vector3(1, 0, 1)).normalized;
+            Vector3 camRight = Vector3.Scale(_mainCamTransform.right, new Vector3(1, 0, 1)).normalized;
+            _targetMoveDirection = (camForward * MovementInput.z + camRight * MovementInput.x).normalized;
+
+            float targetSpeed = MovementInput.magnitude * moveSpeed;
+            _currentHorizontalSpeed = Mathf.SmoothDamp(_currentHorizontalSpeed, targetSpeed, ref _speedSmoothVelocity, movementSmoothTime);
+
+            if (_targetMoveDirection.magnitude > 0.01f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(_targetMoveDirection);
+                rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+                Vector3 newHorizontalVelocity = _targetMoveDirection * _currentHorizontalSpeed;
+                rb.linearVelocity = new Vector3(newHorizontalVelocity.x, rb.linearVelocity.y, newHorizontalVelocity.z);
+            }
+            else
+            {
+                _currentHorizontalSpeed = Mathf.SmoothDamp(_currentHorizontalSpeed, 0, ref _speedSmoothVelocity, movementSmoothTime);
+                rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            }
+        }
+
+        public void HandleGravity()
+        {
+            float gravityScale = gravityMultiplier;
+            if (!JumpHoldTimer.IsRunning && rb.linearVelocity.y > 0)
+            {
+                gravityScale *= 2f;
+            }
+            Vector3 gravity = Physics.gravity * gravityScale * Time.fixedDeltaTime;
+            rb.AddForce(gravity, ForceMode.Acceleration);
+        }
+
+        public void PerformJump()
+        {
+            JumpBufferTimer.Stop();
+            CoyoteTimer.Stop();
+            JumpHoldTimer.Start();
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            animator.SetTrigger(AnimJumpTrigger);
+        }
+
+        public void PerformDash()
+        {
+            _isDashBuffered = false;
+            DashTimer.Start();
+            animator.SetTrigger(AnimDashTrigger);
+            Vector3 dashDir = _targetMoveDirection.magnitude > 0.1f ? _targetMoveDirection : transform.forward;
+            rb.linearVelocity = new Vector3(dashDir.x * dashForce, 0f, dashDir.z * dashForce);
+        }
+
+        private void StartCoyoteTimer() { if (!groundChecker.IsGrounded) CoyoteTimer.Start(); }
 
         void UpdateAnimator()
         {
-            animator.SetFloat(Speed, currentSpeed);
-
-        }
-
-        void HandleTimers()
-        {
-            foreach (var timer in timers)
-            {
-                timer.Tick(Time.deltaTime);
-            }
-        }
-
-        public void HandleJump()
-        {
-            // If not jumpimg and grounded, keep jump velocity at 0
-            if (!jumpTimer.IsRunning && groundChecker.IsGrounded)
-            {
-                jumpVelocity = ZeroF;
-                //jumpTimer.Stop();
-                return;
-            }
-
-           
-            if (!jumpTimer.IsRunning)
-            {
-                // Gravity take over
-                jumpVelocity += Physics.gravity.y * gravityMultiplier * Time.fixedDeltaTime;
-            }
-
-            // Apply velocity
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpVelocity, rb.linearVelocity.z);
-        }
-
-        public void HandleMovement() 
-        { 
-            // Rotate movement direction to be relative to camera or match the camera
-            var adjustedDirection = Quaternion.AngleAxis(mainCam.eulerAngles.y, Vector3.up) * movement;
-
-            if (adjustedDirection.magnitude > ZeroF)
-            {
-                HandleRotation(adjustedDirection);
-
-                HandleHorizontalMovement(adjustedDirection);
-
-                SmoothSpeed(adjustedDirection.magnitude);
-            }
-            else
-            {
-                SmoothSpeed(ZeroF);
-
-                // Reset horizontal velocity for a snappy stop
-                rb.linearVelocity = new Vector3(ZeroF, rb.linearVelocity.y, ZeroF);
-
-            }
-        }
-
-        void HandleHorizontalMovement(Vector3 adjustedDirection)
-        {
-            // Move the player
-            Vector3 velocity = adjustedDirection * moveSpeed * dashVelocity * Time.fixedDeltaTime; 
-            rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, velocity.z);
-        }
-
-        void HandleRotation(Vector3 adjustedDirection) {
-            var targetRotation = Quaternion.LookRotation(adjustedDirection);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
-
-        void SmoothSpeed(float value) 
-        {
-            currentSpeed =  Mathf.SmoothDamp(currentSpeed, value, ref velocity, smoothTime);
-        }
-
-        public void HandleDialogueInput(bool isDialogueOpen)
-        {
-            Debug.Log($"Dialogue state changed: {isDialogueOpen}");
-
-            if (input != null)
-            {
-                if (isDialogueOpen)
-                {
-                    Debug.Log("Disabling player actions.");
-                    input.DisablePlayerActions();
-                }
-                else
-                {
-                    Debug.Log("Enabling player actions.");
-                    input.EnablePlayerActions();
-                }
-            }
-            else
-            {
-                Debug.LogWarning("InputReader not assigned.");
-         
-            }
+            float horizontalSpeed = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z).magnitude;
+            animator.SetFloat(AnimSpeed, horizontalSpeed);
+            animator.SetBool(AnimIsGrounded, groundChecker.IsGrounded);
         }
     }
 }

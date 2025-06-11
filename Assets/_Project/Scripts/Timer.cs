@@ -4,24 +4,24 @@ namespace Platformer
 {
     public abstract class Timer
     {
-        protected float initiaTime;
+        protected float initialTime;
         protected float Time { get; set; }
         public bool IsRunning { get; protected set; }
 
-        public float Progress => Time / initiaTime;
+        public float Progress => initialTime > 0 ? Time / initialTime : 0; // Avoid divide by zero
 
         public Action OnTimerStart = delegate { };
         public Action OnTimerStop = delegate { };
 
         protected Timer(float value)
         {
-            initiaTime = value;
+            initialTime = value;
             IsRunning = false;
         }
 
         public virtual void Start()
         {
-            Time = initiaTime;
+            Time = initialTime;
             if (!IsRunning)
             {
                 IsRunning = true;
@@ -44,7 +44,7 @@ namespace Platformer
         public abstract void Tick(float deltaTime);
 
         public float RemainingSeconds => Time;
-        public float InitialDuration => initiaTime;
+        public float InitialDuration => initialTime;
     }
 
     // countdown/cooldown timer
@@ -69,13 +69,13 @@ namespace Platformer
 
         public void Reset()
         {
-            Time = initiaTime;
+            Time = initialTime;
             IsRunning = false;
         }
 
         public void Reset(float newTime)
         {
-            initiaTime = newTime;
+            initialTime = newTime;
             Reset();
         }
 
