@@ -20,7 +20,6 @@ namespace Platformer
         public event UnityAction DisableMouseControlCamera = delegate { };
         public event UnityAction<bool> Jump = delegate { };
         public event UnityAction<bool> Dash = delegate { };
-        public event UnityAction JumpCancelledEvent = delegate { }; // This can be used to notify when jump is cancelled, e.g., by landing or stopping the jump early.
         public event UnityAction LightAttack = delegate { };
         public event UnityAction HeavyAttack = delegate { };
         public bool IsInputEnabled { get; private set; } = true;
@@ -69,23 +68,7 @@ namespace Platformer
 
         bool IsDeviceMouse(InputAction.CallbackContext context) => context.control.device.name == "Mouse";
 
-        public void OnLightAttack(InputAction.CallbackContext context)
-        {
-            if (IsInputEnabled || context.phase == InputActionPhase.Started)
-            {
-                LightAttack?.Invoke();
-            }
-        }
-
         
-
-        public void OnHeavyAttack(InputAction.CallbackContext context)
-        {
-            if (IsInputEnabled || context.phase == InputActionPhase.Started)
-            { 
-                HeavyAttack?.Invoke();
-            }
-        }
 
         public void OnMouseControlCamera(InputAction.CallbackContext context)
         {
@@ -128,6 +111,22 @@ namespace Platformer
                 case InputActionPhase.Canceled:
                     Jump.Invoke(false);
                     break;
+            }
+        }
+
+        public void OnLightAttack(InputAction.CallbackContext context)
+        {
+            if (IsInputEnabled || context.phase == InputActionPhase.Started)
+            {
+                LightAttack?.Invoke();
+            }
+        }
+
+        public void OnHeavyAttack(InputAction.CallbackContext context)
+        {
+            if (IsInputEnabled || context.phase == InputActionPhase.Started)
+            {
+                HeavyAttack?.Invoke();
             }
         }
     }

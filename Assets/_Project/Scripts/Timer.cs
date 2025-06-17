@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Platformer
 {
@@ -8,7 +9,7 @@ namespace Platformer
         protected float Time { get; set; }
         public bool IsRunning { get; protected set; }
 
-        public float Progress => initialTime > 0 ? Time / initialTime : 0; // Avoid divide by zero
+        public float Progress => Time / initialTime;
 
         public Action OnTimerStart = delegate { };
         public Action OnTimerStop = delegate { };
@@ -19,7 +20,7 @@ namespace Platformer
             IsRunning = false;
         }
 
-        public virtual void Start()
+        public void Start()
         {
             Time = initialTime;
             if (!IsRunning)
@@ -29,7 +30,7 @@ namespace Platformer
             }
         }
 
-        public virtual void Stop()
+        public void Stop()
         {
             if (IsRunning)
             {
@@ -42,16 +43,12 @@ namespace Platformer
         public void Pause() => IsRunning = false;
 
         public abstract void Tick(float deltaTime);
-
-        public float RemainingSeconds => Time;
-        public float InitialDuration => initialTime;
     }
-
-    // countdown/cooldown timer
 
     public class CountdownTimer : Timer
     {
         public CountdownTimer(float value) : base(value) { }
+
         public override void Tick(float deltaTime)
         {
             if (IsRunning && Time > 0)
@@ -67,31 +64,14 @@ namespace Platformer
 
         public bool IsFinished => Time <= 0;
 
-        public void Reset()
-        {
-            Time = initialTime;
-            IsRunning = false;
-        }
+        public void Reset() => Time = initialTime;
 
         public void Reset(float newTime)
         {
             initialTime = newTime;
             Reset();
         }
-
-        // IMPORTANT MODIFICATION: Ensure Time is set to 0 when explicitly stopped
-        public override void Stop()
-        {
-            if (IsRunning)
-            {
-                IsRunning = false;
-                Time = 0; // Explicitly set time to 0 to signal completion
-                OnTimerStop.Invoke();
-            }
-        }
     }
-
-    // stopwatch timer
 
     public class StopwatchTimer : Timer
     {

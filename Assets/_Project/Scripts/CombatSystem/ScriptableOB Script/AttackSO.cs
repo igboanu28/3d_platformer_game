@@ -44,7 +44,7 @@ namespace CombatSystem
 
     }
 
-    public enum AttackInputType 
+    public enum AttackInputType
     { 
         Light, 
         Heavy
