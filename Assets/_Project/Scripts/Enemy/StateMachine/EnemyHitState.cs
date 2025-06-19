@@ -1,37 +1,40 @@
-﻿using UnityEngine;
+﻿// Create this new script: EnemyHitState.cs
+using UnityEngine;
 using UnityEngine.AI;
-using Utilities;
 
 namespace Enemy
 {
     public class EnemyHitState : EnemyBaseState
     {
-        private float hitDuration;
-        private CountdownTimer hitTimer;
+        private readonly NavMeshAgent agent;
+        private float hitAnimationDuration;
 
-        public EnemyHitState(Enemy enemy, Animator animator, float hitDuration)
+        public bool IsHitAnimationComplete { get; private set; }
+
+        public EnemyHitState(Enemy enemy, Animator animator, NavMeshAgent agent, float duration = 0.5f)
             : base(enemy, animator)
         {
-            this.hitDuration = hitDuration;
-            this.hitTimer = new CountdownTimer(hitDuration);
+            this.agent = agent;
+            this.hitAnimationDuration = duration;
         }
 
         public override void OnEnter()
         {
-            Debug.Log("Enemy got hit");
-            animator.CrossFade(Cactus_GetHit, crossFadeDuration);
-            hitTimer.Reset();
-            hitTimer.Start();
+            IsHitAnimationComplete = false;
+            agent.isStopped = true; // Stop the enemy from moving while hurt
+
+            // You'll need a Hit animation trigger in your Animator, e.g., "Hit"
+            // And an animation clip, e.g., "Cactus_Hit"
+            animator.CrossFade("Cactus_GetHit", 0.1f); // Use your actual hit animation name
+
+            // Start a timer to exit the state
+            enemy.StartCoroutine(HitCooldown());
         }
 
-        public override void Update()
+        private System.Collections.IEnumerator HitCooldown()
         {
-            hitTimer.Tick(Time.deltaTime);
-        }
-
-        public bool IsHitAnimationComplete()
-        {
-            return hitTimer.IsFinished;
+            yield return new WaitForSeconds(hitAnimationDuration);
+            IsHitAnimationComplete = true;
         }
     }
 }

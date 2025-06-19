@@ -19,6 +19,8 @@ namespace Enemy
         [SerializeField] float timeBetweenAttacks = 1f;
         [SerializeField] float idleDuration = 5f;
 
+        private bool wasHit = false;
+
         StateMachine stateMachine;
 
         CountdownTimer attackTimer;
@@ -29,6 +31,12 @@ namespace Enemy
         void Awake()
         {
             health = GetComponent<Platformer.Health>();
+            health.OnDamaged += HandleDamageTaken;
+        }
+
+        void OnDestroy()
+        {
+            health.OnDamaged -= HandleDamageTaken;
         }
 
         void Start()
@@ -42,6 +50,7 @@ namespace Enemy
             var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
             var idleState = new EnemyIdleState(this, animator, idleDuration);
             var deathState = new EnemyDeathState(this, animator, agent);
+            var hitState = new EnemyHitState(this, animator, agent);
 
             At(wanderState, chaseState, new FuncPredicate(() => playerDetector.CanDetectPlayer()));
             At(chaseState, wanderState, new FuncPredicate(() => !playerDetector.CanDetectPlayer()));
@@ -50,19 +59,33 @@ namespace Enemy
             At(wanderState, idleState, new FuncPredicate(() => wanderState.IsWanderComplete()));
             At(idleState, wanderState, new FuncPredicate(() => idleState.IsIdleComplete()));
 
+            At(hitState, chaseState, new FuncPredicate(() => hitState.IsHitAnimationComplete && playerDetector.CanDetectPlayer()));
+            At(hitState, wanderState, new FuncPredicate(() => hitState.IsHitAnimationComplete && !playerDetector.CanDetectPlayer()));
+
             // this goes to the death transition from any state
             Any(deathState, new FuncPredicate(() => health.IsDead));
+            Any(hitState, new FuncPredicate(() => wasHit && !health.IsDead));
 
             stateMachine.SetState(wanderState);
         }
-
+        
         void At(IState from, IState to, IPredicate condition) => stateMachine.AddTransition(from, to, condition);
         void Any(IState to, IPredicate condition) => stateMachine.AddAnyTransition(to, condition);
+
+        private void HandleDamageTaken()
+        {
+            wasHit = true;
+        }
 
         void Update()
         {
             stateMachine.Update();
             attackTimer.Tick(Time.deltaTime);
+
+            if (wasHit)
+            {
+                wasHit = false;
+            }
         }
 
         void FixedUpdate()

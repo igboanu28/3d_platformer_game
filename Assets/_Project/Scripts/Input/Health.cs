@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Platformer
 {
@@ -10,6 +11,8 @@ namespace Platformer
         int currentHealth;
 
         public bool IsDead => currentHealth <= 0;
+
+        public event Action OnDamaged;
 
         void Awake()
         {
@@ -23,8 +26,12 @@ namespace Platformer
 
         public void TakeDamage(int damage)
         {
+            if (IsDead) return; // Don't take damage if already dead
+
             currentHealth -= damage;
             PublishHealthPercentage();
+
+            OnDamaged?.Invoke();
         }
 
         void PublishHealthPercentage()
