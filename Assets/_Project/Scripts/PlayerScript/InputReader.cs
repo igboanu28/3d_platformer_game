@@ -116,7 +116,7 @@ namespace Platformer
 
         public void OnLightAttack(InputAction.CallbackContext context)
         {
-            if (IsInputEnabled || context.phase == InputActionPhase.Started)
+            if (IsInputEnabled && context.phase == InputActionPhase.Started)
             {
                 LightAttack?.Invoke();
             }

@@ -29,6 +29,5 @@ namespace Platformer
             timer.Start();
             return true;
         }
-
     }
 }

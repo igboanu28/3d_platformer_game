@@ -13,6 +13,7 @@ namespace Enemy
         protected static readonly int Cactus_RunFWD = Animator.StringToHash("Cactus_RunFWD");
         protected static readonly int Cactus_WalkFWD = Animator.StringToHash("Cactus_WalkFWD");
         protected static readonly int Cactus_Attack01 = Animator.StringToHash("Cactus_Attack01");
+        protected static readonly int Cactus_GetHit = Animator.StringToHash("Cactus_GetHit");
         protected static readonly int Cactus_Die = Animator.StringToHash("Cactus_Die");
         protected static readonly int Cactus_SenseSomethingMaint = Animator.StringToHash("Cactus_SenseSomethingMaint");
 

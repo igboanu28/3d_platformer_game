@@ -9,7 +9,7 @@ namespace Enemy
 
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(PlayerDetector))]
-    public class Enemy : Entity 
+    public class Enemy : Entity
     {
         [SerializeField, Self] NavMeshAgent agent;
         [SerializeField, Self] PlayerDetector playerDetector;
@@ -75,7 +75,7 @@ namespace Enemy
             if (attackTimer.IsRunning) return;
 
             attackTimer.Start();
-            //playerDetector.PlayerHealth.TakeDamage(10);
+            playerDetector.PlayerHealth.TakeDamage(10);
         }
 
 
