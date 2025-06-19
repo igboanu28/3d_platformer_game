@@ -78,8 +78,8 @@ namespace CombatSystem
             activateTimerToReset = true;
             current_Combo_Timer = default_Combo_Timer;
 
-            // Activate the hitbox for a short duration
-            StartCoroutine(ActivateHitboxForDuration(0.3f)); // Adjust the duration as needed
+            //// Activate the hitbox for a short duration
+            //StartCoroutine(ActivateHitboxForDuration(0.3f)); // Adjust the duration as needed
 
 
             if (current_Combo_State == ComboState.Combo1)
@@ -112,12 +112,12 @@ namespace CombatSystem
             }
         }
 
-        IEnumerator ActivateHitboxForDuration(float duration)
-        {
-            EnableWeaponHitbox();
-            yield return new WaitForSeconds(duration);
-            DisableWeaponHitbox();
-        }
+        //IEnumerator ActivateHitboxForDuration(float duration)
+        //{
+        //    EnableWeaponHitbox();
+        //    yield return new WaitForSeconds(duration);
+        //    DisableWeaponHitbox();
+        //}
 
         public void EnableWeaponHitbox()
         {

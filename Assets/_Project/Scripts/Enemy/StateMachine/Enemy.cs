@@ -78,6 +78,9 @@ namespace Enemy
             playerDetector.PlayerHealth.TakeDamage(10);
         }
 
-
+        private void DestroySelf()
+        {
+            GameObject.Destroy(gameObject);
+        }
     }
 }

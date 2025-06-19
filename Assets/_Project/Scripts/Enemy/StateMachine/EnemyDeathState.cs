@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 namespace Enemy
 {
@@ -28,11 +29,12 @@ namespace Enemy
                 rb.isKinematic = true;
 
             // Optionally destroy the enemy after a delay
-            enemy.Invoke(nameof(DestroySelf), 3f);
+            enemy.StartCoroutine(DestroyAfterDelay(3f));
         }
 
-        private void DestroySelf()
+        private IEnumerator DestroyAfterDelay(float delay)
         {
+            yield return new WaitForSeconds(delay);
             GameObject.Destroy(enemy.gameObject);
         }
     }
