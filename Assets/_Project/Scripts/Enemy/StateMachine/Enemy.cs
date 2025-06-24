@@ -19,6 +19,11 @@ namespace Enemy
         [SerializeField] float timeBetweenAttacks = 1f;
         [SerializeField] float idleDuration = 5f;
 
+        [Header("Effects")]
+        [SerializeField] private GameObject hitVFXPrefab;
+
+        [SerializeField, Self] EnemyAudio enemyAudio;
+
         private bool wasHit = false;
 
         StateMachine stateMachine;
@@ -49,8 +54,8 @@ namespace Enemy
             var chaseState = new EnemyChaseState(this, animator, agent, playerDetector.Player);
             var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
             var idleState = new EnemyIdleState(this, animator, idleDuration);
-            var deathState = new EnemyDeathState(this, animator, agent);
-            var hitState = new EnemyHitState(this, animator, agent);
+            var deathState = new EnemyDeathState(this, animator, agent, enemyAudio);
+            var hitState = new EnemyHitState(this, animator, agent, playerDetector.Player, hitVFXPrefab, enemyAudio);
 
             At(wanderState, chaseState, new FuncPredicate(() => playerDetector.CanDetectPlayer()));
             At(chaseState, wanderState, new FuncPredicate(() => !playerDetector.CanDetectPlayer()));

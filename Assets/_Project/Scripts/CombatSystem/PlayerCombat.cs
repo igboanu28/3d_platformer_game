@@ -10,8 +10,12 @@ namespace CombatSystem
 
         private Animator animator;
         [SerializeField, Anywhere] private InputReader input;
-        // Add this to your PlayerCombat script's variable declarations
+        
+        [Header("Weapon Settings")]
         [SerializeField] private GameObject weaponHitbox;
+
+        [Header("SwordTailParticle")]
+        [SerializeField] private GameObject swordTailParticle;
 
         [Header("Combo Settings")]
         private bool activateTimerToReset;
@@ -30,6 +34,10 @@ namespace CombatSystem
             if (weaponHitbox != null)
             {
                 weaponHitbox.SetActive(false); // Make sure the hitbox is off at the start
+            }
+            if (swordTailParticle != null)
+            {
+                swordTailParticle.SetActive(false); // Make sure the sword tail particle is off at the start
             }
         }
 
@@ -107,6 +115,7 @@ namespace CombatSystem
                     activateTimerToReset = false;
                     current_Combo_Timer = default_Combo_Timer; // Reset the timer for the next combo
                     DisableWeaponHitbox();
+                    DisableSwordTail();
 
                 }
             }
@@ -134,6 +143,19 @@ namespace CombatSystem
                 weaponHitbox.SetActive(false);
             }
         }
+
+        public void EnableSwordTail()
+        {
+            if (swordTailParticle != null)
+                swordTailParticle.SetActive(true);
+        }
+
+        public void DisableSwordTail()
+        {
+            if (swordTailParticle != null)
+                swordTailParticle.SetActive(false);
+        }
+
     }
 
     public enum ComboState
