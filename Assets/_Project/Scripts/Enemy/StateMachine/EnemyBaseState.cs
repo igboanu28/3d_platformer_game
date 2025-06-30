@@ -17,6 +17,9 @@ namespace Enemy
         protected static readonly int Cactus_Die = Animator.StringToHash("Cactus_Die");
         protected static readonly int Cactus_SenseSomethingMaint = Animator.StringToHash("Cactus_SenseSomethingMaint");
 
+        // This enemy 2 
+        protected static readonly int Fireball_Attack = Animator.StringToHash("Fireball_Attack");
+
         protected const float crossFadeDuration = 0.1f;
 
         protected EnemyBaseState(Enemy enemy, Animator animator)

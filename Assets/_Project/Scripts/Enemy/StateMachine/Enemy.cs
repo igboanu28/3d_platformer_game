@@ -24,6 +24,11 @@ namespace Enemy
 
         [SerializeField, Self] EnemyAudio enemyAudio;
 
+        [Header("Attack Settings")]
+        [SerializeField] private AttackType attackType;
+        [SerializeField] private GameObject projectilePrefab;
+        [SerializeField] private Transform firePoint;
+
         private bool wasHit = false;
 
         StateMachine stateMachine;
@@ -52,15 +57,30 @@ namespace Enemy
 
             var wanderState = new EnemyWanderState(this, animator, agent, wanderRadius);
             var chaseState = new EnemyChaseState(this, animator, agent, playerDetector.Player);
-            var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
+            //var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
             var idleState = new EnemyIdleState(this, animator, idleDuration);
             var deathState = new EnemyDeathState(this, animator, agent, enemyAudio);
             var hitState = new EnemyHitState(this, animator, agent, playerDetector.Player, hitVFXPrefab, enemyAudio);
 
+            // Instantiate the correct attack state based on the Inspector setting
+            if (attackType == AttackType.Melee)
+            {
+                var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
+                At(chaseState, attackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
+                At(attackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
+            }
+            else if (attackType == AttackType.Ranged)
+            {
+                // Use our new Ranged Attack State
+                var rangedAttackState = new FireballAttackState(this, animator, agent, playerDetector.Player, timeBetweenAttacks);
+                At(chaseState, rangedAttackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
+                At(rangedAttackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
+            }
+
             At(wanderState, chaseState, new FuncPredicate(() => playerDetector.CanDetectPlayer()));
             At(chaseState, wanderState, new FuncPredicate(() => !playerDetector.CanDetectPlayer()));
-            At(chaseState, attackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
-            At(attackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
+            //At(chaseState, attackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
+            //At(attackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
             At(wanderState, idleState, new FuncPredicate(() => wanderState.IsWanderComplete()));
             At(idleState, wanderState, new FuncPredicate(() => idleState.IsIdleComplete()));
 
@@ -110,5 +130,18 @@ namespace Enemy
         {
             GameObject.Destroy(gameObject);
         }
+
+        public void FireProjectile()
+        {
+            if (projectilePrefab == null || firePoint == null || playerDetector.Player == null) return;
+
+            GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        }
+    }
+
+    public enum AttackType
+    {
+        Melee,
+        Ranged
     }
 }
