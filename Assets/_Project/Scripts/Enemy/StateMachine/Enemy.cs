@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using Platformer;
-using UnityEngine.Rendering;
+using System;
 
 namespace Enemy
 {
@@ -11,28 +11,28 @@ namespace Enemy
     [RequireComponent(typeof(PlayerDetector))]
     public class Enemy : Entity
     {
+        [Header("Enemy Type")]
+        [SerializeField] private EnemyType type;
+
+        [Header("General Settings")]
         [SerializeField, Self] NavMeshAgent agent;
         [SerializeField, Self] PlayerDetector playerDetector;
         [SerializeField, Child] Animator animator;
-
         [SerializeField] float wanderRadius = 10f;
         [SerializeField] float timeBetweenAttacks = 1f;
         [SerializeField] float idleDuration = 5f;
 
         [Header("Effects")]
         [SerializeField] private GameObject hitVFXPrefab;
-
         [SerializeField, Self] EnemyAudio enemyAudio;
 
-        [Header("Attack Settings")]
-        [SerializeField] private AttackType attackType;
+        // Ranged enemy
+        [Header("Ranged Attack Settings")]
         [SerializeField] private GameObject projectilePrefab;
         [SerializeField] private Transform firePoint;
 
         private bool wasHit = false;
-
         StateMachine stateMachine;
-
         CountdownTimer attackTimer;
         Platformer.Health health;
 
@@ -62,22 +62,26 @@ namespace Enemy
             var deathState = new EnemyDeathState(this, animator, agent, enemyAudio);
             var hitState = new EnemyHitState(this, animator, agent, playerDetector.Player, hitVFXPrefab, enemyAudio);
 
-            // Instantiate the correct attack state based on the Inspector setting
-            if (attackType == AttackType.Melee)
-            {
+            // this will haelp to set up the correct attack logic based on the dropdown choice.
+            if (type == EnemyType.Melee)
+            { 
                 var attackState = new EnemyAttackState(this, animator, agent, playerDetector.Player);
                 At(chaseState, attackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
                 At(attackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
             }
-            else if (attackType == AttackType.Ranged)
+            else if (type == EnemyType.Ranged)
             {
-                // Use our new Ranged Attack State
-                var rangedAttackState = new FireballAttackState(this, animator, agent, playerDetector.Player, timeBetweenAttacks);
-                At(chaseState, rangedAttackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
-                At(rangedAttackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
+                var rangedAttackState = new RangedAttackState(this, animator, agent, playerDetector.Player, 1.5f); // the 1.5s is for the animation length
+
+                // Since the ranged enemy doesn't chase, it attacks from an idle or wander state
+                At(wanderState, rangedAttackState, new FuncPredicate(() => playerDetector.CanAttackPlayer() && !attackTimer.IsRunning));
+                At(idleState, rangedAttackState, new FuncPredicate(() => playerDetector.CanAttackPlayer() && !attackTimer.IsRunning));
+
+                // When the attack is done go back to wandering
+                At(rangedAttackState, wanderState, new FuncPredicate(() => rangedAttackState.IsAttackComplete));
             }
 
-            At(wanderState, chaseState, new FuncPredicate(() => playerDetector.CanDetectPlayer()));
+            At(wanderState, chaseState, new FuncPredicate(() => type == EnemyType.Melee && playerDetector.CanDetectPlayer()));
             At(chaseState, wanderState, new FuncPredicate(() => !playerDetector.CanDetectPlayer()));
             //At(chaseState, attackState, new FuncPredicate(() => playerDetector.CanAttackPlayer()));
             //At(attackState, chaseState, new FuncPredicate(() => !playerDetector.CanAttackPlayer()));
@@ -118,29 +122,39 @@ namespace Enemy
             stateMachine.FixedUpdate();
         }
 
+        
         public void Attack()
         {
             if (attackTimer.IsRunning) return;
-
             attackTimer.Start();
-            playerDetector.PlayerHealth.TakeDamage(10);
+
+            if (type == EnemyType.Melee)
+            {
+                playerDetector.PlayerHealth.TakeDamage(10);
+            }
+            if (type == EnemyType.Ranged)
+            {
+                FireProjectile();
+                playerDetector.PlayerHealth.TakeDamage(10);
+            }
+        }
+
+        public void FireProjectile()
+        {
+            if (projectilePrefab != null && firePoint != null)
+            {
+                Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+            }
         }
 
         private void DestroySelf()
         {
             GameObject.Destroy(gameObject);
         }
-
-        public void FireProjectile()
-        {
-            if (projectilePrefab == null || firePoint == null || playerDetector.Player == null) return;
-
-            GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        }
     }
 
-    public enum AttackType
-    {
+    public enum EnemyType
+    { 
         Melee,
         Ranged
     }
