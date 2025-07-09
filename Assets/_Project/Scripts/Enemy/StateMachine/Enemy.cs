@@ -132,11 +132,7 @@ namespace Enemy
             {
                 playerDetector.PlayerHealth.TakeDamage(10);
             }
-            if (type == EnemyType.Ranged)
-            {
-                FireProjectile();
-                playerDetector.PlayerHealth.TakeDamage(10);
-            }
+            
         }
 
         public void FireProjectile()

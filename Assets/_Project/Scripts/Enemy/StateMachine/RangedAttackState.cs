@@ -29,7 +29,6 @@ namespace Enemy
             lookDirection.y = 0;
             enemy.transform.rotation = Quaternion.LookRotation(lookDirection);
 
-            // Play the Ranged Attack animation
             animator.CrossFade(Fireball_Attack, crossFadeDuration);
 
             // Start the main attack cooldown
